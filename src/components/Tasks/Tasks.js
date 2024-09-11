@@ -1,34 +1,31 @@
 import React from 'react'
 import Section from '../UI/Section';
+import TaskItem from './TaskItem';
+// data
+import { getTasks } from '../../ultilities/httpRequest';
+import { useFetch } from '../../hooks/useFetch';
+
 // css
 import styles from './Tasks.module.css'
-import TaskItem from './TaskItem';
 
-
-import { useEffect, useState } from 'react'
-import { getTasks } from '../../ultilities/httpRequest';
-function useFetch(fetchFn) {
-    const [tasks, setTasks] = useState([])
-
-    useEffect(() => {
-        async function gets() {
-            const tasks = await fetchFn()
-            return tasks
-        }
-        // Object.entries(gets).map(e => e)
-        gets()
-    }, [])
-    return { tasks }
-}
-
-function Tasks(props) {
-    const { tasks } = useFetch(getTasks)
+function Tasks() {
+    const { tasks, isLoading, error } = useFetch(getTasks, [])
+    if (error)
+        return (
+            <Section>
+                <TaskItem item={error.message} />
+            </Section>
+        )
     return (
         <Section>
             <div className={styles['container']}>
                 <ul>
-                    {tasks.map(i => {
-                        return <TaskItem item={i} key={i.id} />
+                    {isLoading && <TaskItem item='Data is loading ...' />}
+                    {!isLoading && tasks.length <= 0 && <TaskItem item='No Tasks found! Start adding some!' />}
+                    {!isLoading && tasks.map(i => {
+                        return <li key={i.id}>
+                            <TaskItem item={i.value} />
+                        </li>
                     })}
                 </ul>
             </div>
